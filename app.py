@@ -83,7 +83,7 @@ with tab2:
 # التبويب الثالث: CIRCUIT BREAKER CALCULATION
 # ------------------------------------------------------------------
 with tab3:
-    st.header("🛡️ اختيار القاطع الحامي (Circuit Breaker)")
+    st.header("🛡️ اختيار تيار القاطع الحامي (Circuit Breaker)")
     
     u_input = st.number_input("القدرة بالكيلو فولت أمبير Power (KVA):", min_value=0.0, value=0.0, step=1.0, key="u_in")
     
