@@ -70,9 +70,9 @@ with tab4:
     cb_type = st.radio("اختر نوع القاطع المطلوب:", ["MCB", "MCCB", "ACB"], horizontal=True)
 
     # القوائم القياسية (Standard Lists)
-    mcb_standards = [1, 2, 4, 6, 10, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125]
-    mccb_standards = [16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000, 1250, 1600]
-    acb_standards = [630, 800, 1000, 1250, 1600, 2000, 2500, 3200, 4000, 5000, 6300]
+    MCB_standards = [6, 10, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125,150]
+    MCCB_standards = [16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000, 1250, 1600]
+    ACB_standards = [630, 800, 1000, 1250, 1600, 2000, 2500, 3200, 4000, 5000, 6300]
 
     if st.button("Find Standard Size"):
         if calculated_amp <= 0:
@@ -80,11 +80,11 @@ with tab4:
         else:
             # اختيار القائمة بناء على النوع
             if cb_type == "MCB":
-                standards = mcb_standards
+                standards = MCB_standards
             elif cb_type == "MCCB":
-                standards = mccb_standards
+                standards = MCCB_standards
             else:
-                standards = acb_standards
+                standards = ACB_standards
 
             # البحث عن أقرب مقاس أكبر من أو يساوي القيمة المحسوبة
             standard_selection = next((x for x in standards if x >= calculated_amp), None)
