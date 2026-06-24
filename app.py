@@ -1,16 +1,17 @@
 import streamlit as st
 
-# إعداد الصفحة وتنزيل الـ CSS المتوافق مع الوضعين الداكن والمضيء
-st.set_page_config(page_title="حاسبة الهندسة الكهربائية", layout="centered")
+# إعداد الصفحة
+st.set_page_config(page_title="حاسبة الهندسة الكهربائية الاحترافية", layout="centered")
 
-st.title("⚡ منصة الحسابات الكهربائية السريعة")
-st.write("مرحباً بك يا هندسة. اختر الأداة المطلوبة من التبويبات بالأسفل لإجراء الحسابات فوراً:")
+st.title("⚡ منصة الحسابات الكهربائية المتكاملة")
+st.write("مرحباً بك يا هندسة. تم إضافة قسم اختيار المقاسات القياسية (Standard Size) بناءً على طلبك:")
 
-# إنشاء التبويبات (Tabs) لتنظيم الأدوات الثلاثة
-tab1, tab2, tab3 = st.tabs([
+# إنشاء التبويبات الأربعة
+tab1, tab2, tab3, tab4 = st.tabs([
     "📊 حساب الـ KVA", 
-    "🔌 حساب تيار الحمل (Current)", 
-    "🛡️ حساب القاطع الكهربائي (CB)"
+    "🔌 تيار الحمل (Current)", 
+    "🛡️ حساب القاطع (CB)",
+    "📏 المقاس القياسي (Standard)"
 ])
 
 # ------------------------------------------------------------------
@@ -18,98 +19,79 @@ tab1, tab2, tab3 = st.tabs([
 # ------------------------------------------------------------------
 with tab1:
     st.header("📊 حساب القدرة الظاهرية (KVA)")
+    power_val = st.number_input("أدخل قيمة القدرة:", min_value=0.0, value=1.0, step=0.5, key="tab1_val")
+    load_name = st.selectbox("نوع الحمل:", [('Motor', 'motor'), ('Motor with Inverter', 'motor with inverter'), ('Other', 'other')], format_func=lambda x: x[0])
+    power_unit = st.selectbox("الوحدة:", [('KW', 'kw'), ('HP', 'hp')], format_func=lambda x: x[0])
     
-    power_val = st.number_input("أدخل قيمة القدرة (Power Value):", min_value=0.0, value=1.0, step=0.5, key="p_val")
-    
-    load_name = st.selectbox(
-        "نوع الحمل (Load Name):",
-        options=[('Motor', 'motor'), ('Motor with Inverter', 'motor with inverter'), ('Other', 'other')],
-        format_func=lambda x: x[0],
-        key="l_name"
-    )
-    
-    power_unit = st.selectbox(
-        "الوحدة (Unit):",
-        options=[('KW', 'kw'), ('HP', 'hp')],
-        format_func=lambda x: x[0],
-        key="p_unit"
-    )
-    
-    if st.button("Calculate KVA", type="primary"):
-        a = power_val
-        x = load_name[1]
-        y = power_unit[1]
-
-        if x == "motor" and y == 'kw':
-            result = a / 0.8
-        elif x == "motor with inverter" and y == 'kw':
-            result = a / 0.7
-        else:
-            result = a
-
-        st.markdown("---")
-        st.success(f"🎯 **النتيجة:** Rated Power هي **{result:.2f} KVA**")
+    if st.button("Calculate KVA"):
+        result = power_val / 0.8 if load_name[1] == "motor" and power_unit[1] == 'kw' else (power_val / 0.7 if load_name[1] == "motor with inverter" and power_unit[1] == 'kw' else power_val)
+        st.success(f"🎯 النتيجة: **{result:.2f} KVA**")
 
 # ------------------------------------------------------------------
 # التبويب الثاني: LOAD CURRENT CALCULATION
 # ------------------------------------------------------------------
 with tab2:
-    st.header("🔌 حساب تيار الحمل (Load Current)")
+    st.header("🔌 حساب تيار الحمل")
+    power_input = st.number_input("القدرة (KVA):", min_value=0.0, value=1.0, step=0.5, key="tab2_val")
+    phase_dropdown = st.selectbox("نوع الفاز:", [('1-Phase', '1-phase'), ('3-Phase', '3-phase')], format_func=lambda x: x[0])
     
-    power_input = st.number_input("القدرة بالكيلو فولت أمبير Power (KVA):", min_value=0.0, value=1.0, step=0.5, key="p_input")
-    
-    phase_dropdown = st.selectbox(
-        "نوع الفاز (Phase Type):",
-        options=[('1-Phase', '1-phase'), ('3-Phase', '3-phase')],
-        format_func=lambda x: x[0],
-        key="phase_drop"
-    )
-    
-    if st.button("Calculate Current", type="secondary"):
-        t = power_input
-        z = phase_dropdown[1]
-
-        st.markdown("---")
-        if z == "3-phase":
-            current = t * 1.5
-            st.warning(f"⚡ **تيار الحمل المستمر:** {current:.2f} Ampere")
-        elif z == "1-phase":
-            current = t * 4.5
-            st.warning(f"⚡ **تيار الحمل المستمر:** {current:.2f} Ampere")
-        else:
-            st.error("خطأ في الاختيار")
+    if st.button("Calculate Current"):
+        current = power_input * (1.5 if phase_dropdown[1] == "3-phase" else 4.5)
+        st.warning(f"⚡ تيار الحمل: **{current:.2f} Ampere**")
 
 # ------------------------------------------------------------------
 # التبويب الثالث: CIRCUIT BREAKER CALCULATION
 # ------------------------------------------------------------------
 with tab3:
-    st.header("🛡️ اختيار تيار القاطع   (Circuit Breaker current)")
+    st.header("🛡️ حساب سعة القاطع (Theoretical)")
+    u_input = st.number_input("تيار الحمل المحسوب:", min_value=0.0, value=0.0, step=1.0, key="tab3_val")
+    g_dropdown = st.selectbox("الفاز للشيكة:", [('1-Phase', '1-phase'), ('3-Phase', '3-phase')], format_func=lambda x: x[0], key="tab3_drop")
     
-    u_input = st.number_input("القدرة بالكيلو فولت أمبير Power (KVA):", min_value=0.0, value=0.0, step=1.0, key="u_in")
-    
-    g_dropdown = st.selectbox(
-        "نوع الفاز للشيكة (Phase Type):",
-        options=[('1-Phase', '1-phase'), ('3-Phase', '3-phase')],
-        format_func=lambda x: x[0],
-        key="g_drop"
-    )
-    
-    if st.button("Calculate CB"):
-        u = u_input
-        g = g_dropdown[1]
+    if st.button("Calculate CB Capacity"):
+        if u_input > 25: result = 2 * u_input
+        elif 0 < u_input <= 25:
+            if g_dropdown[1] == "3-phase" and u_input > 5: result = round(u_input * 3.3, 1)
+            elif g_dropdown[1] == "1-phase" and u_input < 10: result = round(u_input * 10, 1)
+            else: result = "Out of range"
+        else: result = "Error"
+        st.info(f"🛡️ سعة القاطع (نظرياً): **{result} Ampere**")
 
-        st.markdown("---")
-        if u > 25:
-            result = 2 * u
-            st.info(f"🛡️ **سعة القاطع المناسب (CB):** {result:.1f} Ampere")
-        elif 0 < u <= 25:
-            if g == "3-phase" and u > 5:
-                result = round(u * 3.3, 1)
-                st.info(f"🛡️ **سعة القاطع المناسب (CB):** {result} Ampere")
-            elif g == "1-phase" and u < 10:
-                result = round(u * 10, 1)
-                st.info(f"🛡️ **سعة القاطع المناسب (CB):** {result} Ampere")
-            else:
-                st.error("تنبيه: خارج النطاق المحدد للمجال الصغير (Out of range).")
+# ------------------------------------------------------------------
+# التبويب الرابع: NEW - STANDARD CB SELECTION
+# ------------------------------------------------------------------
+with tab4:
+    st.header("📏 اختيار المقاس القياسي (Standard Size)")
+    st.write("أدخل القيمة المحسوبة للقاطع، وسأقوم باقتراح أقرب مقاس standard متاح في السوق:")
+
+    # إدخال القيمة المحسوبة (من التبويب السابق)
+    calculated_amp = st.number_input("أدخل قيمة الأمبير المحسوبة (Calculated Ampere):", min_value=0.0, value=0.0, step=1.0)
+    
+    # اختيار نوع القاطع
+    cb_type = st.radio("اختر نوع القاطع المطلوب:", ["MCB", "MCCB", "ACB"], horizontal=True)
+
+    # القوائم القياسية (Standard Lists)
+    mcb_standards = [1, 2, 4, 6, 10, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125]
+    mccb_standards = [16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000, 1250, 1600]
+    acb_standards = [630, 800, 1000, 1250, 1600, 2000, 2500, 3200, 4000, 5000, 6300]
+
+    if st.button("Find Standard Size"):
+        if calculated_amp <= 0:
+            st.error("يرجى إدخال قيمة أكبر من الصفر.")
         else:
-            st.error("خطأ: يجب أن يكون التيار أو القدرة أكبر من الصفر!")
+            # اختيار القائمة بناء على النوع
+            if cb_type == "MCB":
+                standards = mcb_standards
+            elif cb_type == "MCCB":
+                standards = mccb_standards
+            else:
+                standards = acb_standards
+
+            # البحث عن أقرب مقاس أكبر من أو يساوي القيمة المحسوبة
+            standard_selection = next((x for x in standards if x >= calculated_amp), None)
+
+            if standard_selection:
+                st.markdown("---")
+                st.success(f"✅ المقاس القياسي المقترح لـ **{cb_type}** هو: **{standard_selection} Ampere**")
+                st.info(f"ملاحظة: تم اختيار أقرب مقاس متوفر في السوق المصري والعالمي يغطي القيمة {calculated_amp} أمبير.")
+            else:
+                st.error(f"عفواً، القيمة المحسوبة تتخطى أكبر مقاس متاح في فئة {cb_type}.")
